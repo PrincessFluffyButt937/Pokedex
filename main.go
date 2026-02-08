@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 func main() {
+	fmt.Print(time.Now())
 	//Start_REPL()
-	var temp CFG // delete this!!!!
-	commandMap(&temp)
 }
 
 func cleanInput(text string) []string {
@@ -19,6 +19,8 @@ func cleanInput(text string) []string {
 
 func Start_REPL() {
 	scanner := bufio.NewScanner(os.Stdin)
+	var con CFG
+	con.Next = "https://pokeapi.co/api/v2/location-area/"
 	for true {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
@@ -32,8 +34,8 @@ func Start_REPL() {
 			fmt.Println("Unknown command")
 			continue
 		}
-		var temp CFG // delete this!!!!
-		cmd.callback(&temp)
+
+		cmd.callback(&con)
 		//fmt.Printf("Your command was: %v\n", text[0])
 
 	}
