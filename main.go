@@ -6,11 +6,12 @@ import (
 	"os"
 	"strings"
 	"time"
+
+	"github.com/PrincessFluffyButt937/Pokedex/internal/pokecache"
 )
 
 func main() {
-	fmt.Print(time.Now())
-	//Start_REPL()
+	Start_REPL()
 }
 
 func cleanInput(text string) []string {
@@ -19,8 +20,10 @@ func cleanInput(text string) []string {
 
 func Start_REPL() {
 	scanner := bufio.NewScanner(os.Stdin)
-	var con CFG
-	con.Next = "https://pokeapi.co/api/v2/location-area/"
+	con := CFG{
+		Next:  "https://pokeapi.co/api/v2/location-area/",
+		cache: pokecache.NewCache(5 * time.Second),
+	}
 	for true {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()

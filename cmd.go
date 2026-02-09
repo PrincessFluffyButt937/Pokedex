@@ -6,6 +6,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"github.com/PrincessFluffyButt937/Pokedex/internal/pokecache"
 )
 
 type cliCommand struct {
@@ -17,6 +19,7 @@ type cliCommand struct {
 type CFG struct {
 	Next     string
 	Previous string
+	cache    *pokecache.Cache
 }
 
 type AreaList struct {
@@ -71,6 +74,24 @@ func commandHelp(con *CFG) error {
 
 func commandMap(con *CFG) error {
 	base_url := con.Next
+	cached, exists := con.cache.Get(base_url)
+	//cache logic
+	if exists {
+		var cached_data AreaList
+		if err := json.Unmarshal(cached, &cached_data); err != nil {
+			fmt.Printf("Error - Unmarshaling cached response: %v", err)
+			return err
+		}
+		con.Previous = con.Next
+		con.Next = cached_data.Next
+
+		for _, area := range cached_data.Results {
+			fmt.Println(area.Name)
+		}
+		con.cache.Add(base_url, cached)
+		return nil
+	}
+	//Get request logic
 	res, err := http.Get(base_url)
 	if err != nil {
 		fmt.Printf("Error - https GET request failed: %v", err)
@@ -88,9 +109,13 @@ func commandMap(con *CFG) error {
 	con.Previous = con.Next
 	con.Next = data.Next
 
+	//debug print
+	fmt.Println("Reading from cache - Map")
+
 	for _, area := range data.Results {
 		fmt.Println(area.Name)
 	}
+	con.cache.Add(base_url, body)
 	return nil
 }
 
@@ -100,13 +125,34 @@ func commandMapb(con *CFG) error {
 		return nil
 	}
 	base_url := con.Previous
+	cached, exists := con.cache.Get(base_url)
+	//cache logic
+	if exists {
+		var cached_data AreaList
+		if err := json.Unmarshal(cached, &cached_data); err != nil {
+			fmt.Printf("Error - Unmarshaling cached response: %v", err)
+			return err
+		}
+		con.Next = con.Previous
+		con.Previous = cached_data.Previous
+
+		//debug print
+		fmt.Println("Reading from cache - Mapb")
+
+		for _, area := range cached_data.Results {
+			fmt.Println(area.Name)
+		}
+		con.cache.Add(base_url, cached)
+		return nil
+	}
+	//Get request logic
+
 	res, err := http.Get(base_url)
 	if err != nil {
 		fmt.Printf("Error - https GET request failed: %v", err)
 		return err
 	}
 	defer res.Body.Close()
-
 	body, _ := io.ReadAll(res.Body)
 
 	var data AreaList
@@ -120,5 +166,6 @@ func commandMapb(con *CFG) error {
 	for _, area := range data.Results {
 		fmt.Println(area.Name)
 	}
+	con.cache.Add(base_url, body)
 	return nil
 }
