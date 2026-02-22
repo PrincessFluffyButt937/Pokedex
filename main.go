@@ -23,6 +23,7 @@ func Start_REPL() {
 	con := CFG{
 		Next:  "https://pokeapi.co/api/v2/location-area/",
 		cache: pokecache.NewCache(5 * time.Second),
+		Repo:  make(map[string]Pokemon),
 	}
 	for true {
 		fmt.Print("Pokedex > ")
@@ -30,6 +31,11 @@ func Start_REPL() {
 		text := cleanInput(scanner.Text())
 		if len(text) == 0 {
 			continue
+		}
+		if len(text) > 1 {
+			con.Arg = text[1]
+		} else {
+			con.Arg = ""
 		}
 		commmand := text[0]
 		cmd, exists := cmd_req[commmand]
