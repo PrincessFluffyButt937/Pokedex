@@ -101,6 +101,11 @@ var cmd_req = map[string]cliCommand{
 		description: "inspect <pokemom_name>",
 		callback:    commandInspect,
 	},
+	"pokedex": {
+		name:        "pokedex",
+		description: "Lists the pokemons you have collected.",
+		callback:    commandPokedex,
+	},
 }
 
 func commandExit(con *CFG) error {
@@ -116,6 +121,7 @@ func commandHelp(con *CFG) error {
 	fmt.Println("explore <location_name>: Explores pokemon encouters in said area")
 	fmt.Println("catch <pokemom_name>: Attempts to catch a pokemon.")
 	fmt.Println("inspect <pokemom_name>: Inspects pokemon you have already caught.")
+	fmt.Println("pokedex: Lists the pokemons you have collected.")
 	fmt.Println("map: Lists next 20 locations")
 	fmt.Println("mapb: Lists previous 20 locations")
 
@@ -351,6 +357,18 @@ func commandInspect(con *CFG) error {
 		fmt.Println("Types:")
 		for _, pok_type := range pokemon.Types {
 			fmt.Printf("  - %s\n", pok_type.Type.Name)
+		}
+	}
+	return nil
+}
+
+func commandPokedex(con *CFG) error {
+	if len(con.Repo) == 0 {
+		fmt.Println("You have not collected any pokemons.")
+	} else {
+		fmt.Println("Your Pokedex:")
+		for _, pokemon := range con.Repo {
+			fmt.Printf(" - %s\n", pokemon.Name)
 		}
 	}
 	return nil
